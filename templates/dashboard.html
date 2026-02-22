@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EPFO Member Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --primary: #1a3a6e; --primary-light: #2451a0; --primary-pale: rgba(26,58,110,0.07);
+  --accent: #f7941d; --accent2: #e85d26;
+  --success: #1e9e6e; --success-pale: rgba(30,158,110,0.08);
+  --warning: #f59e0b; --warning-pale: rgba(245,158,11,0.1);
+  --danger: #ef4444; --danger-pale: rgba(239,68,68,0.08);
+  --info: #6366f1; --info-pale: rgba(99,102,241,0.08);
+  --bg: #f0f4fb; --surface: #fff; --surface2: #f8faff;
+  --text: #1a2235; --text2: #5a6a85; --border: #dde4f0;
+  --shadow: 0 4px 24px rgba(26,58,110,0.08);
+  --shadow-lg: 0 8px 40px rgba(26,58,110,0.14);
+  --radius: 16px; --radius-sm: 10px;
+  --sidebar: 260px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+
+/* SIDEBAR */
+.sidebar {
+  width: var(--sidebar); background: var(--primary); min-height: 100vh;
+  position: fixed; left: 0; top: 0; z-index: 200;
+  display: flex; flex-direction: column;
+  transition: transform 0.3s;
+}
+.sidebar-logo { padding: 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.sidebar-logo .logo-box { display: flex; align-items: center; gap: 10px; }
+.logo-icon { width: 36px; height: 36px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; color: #fff; }
+.logo-text .t1 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; color: #fff; }
+.logo-text .t2 { font-size: 0.65rem; color: rgba(255,255,255,0.5); letter-spacing: 0.04em; }
+
+.user-pill { margin: 16px 12px; background: rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
+.user-avatar { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 700; color: #fff; font-size: 0.9rem; }
+.user-info .name { font-size: 0.85rem; font-weight: 600; color: #fff; }
+.user-info .uan { font-size: 0.7rem; color: rgba(255,255,255,0.5); }
+
+.nav-menu { flex: 1; padding: 8px 10px; overflow-y: auto; }
+.nav-item { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 10px; cursor: pointer; color: rgba(255,255,255,0.7); font-size: 0.875rem; font-weight: 500; transition: all 0.2s; text-decoration: none; margin-bottom: 2px; }
+.nav-item:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.nav-item.active { background: rgba(255,255,255,0.15); color: #fff; font-weight: 600; }
+.nav-item.active .nav-icon { color: var(--accent); }
+.nav-icon { width: 18px; text-align: center; font-size: 0.9rem; }
+.nav-badge { margin-left: auto; background: var(--danger); color: #fff; font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 20px; }
+
+.nav-section-title { font-size: 0.67rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.35); padding: 14px 14px 6px; }
+
+.sidebar-footer { padding: 16px 10px; border-top: 1px solid rgba(255,255,255,0.1); }
+.sidebar-footer .nav-item { color: rgba(255,255,255,0.6); }
+
+/* MAIN */
+.main-wrap { margin-left: var(--sidebar); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+/* TOP NAV */
+.topnav {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0 28px; height: 64px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+}
+.breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 0.875rem; color: var(--text2); }
+.breadcrumb .current { color: var(--text); font-weight: 600; }
+.breadcrumb i { font-size: 0.75rem; color: var(--border); }
+.topnav-right { display: flex; align-items: center; gap: 12px; }
+.icon-btn { width: 38px; height: 38px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--surface2); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text2); font-size: 0.95rem; position: relative; transition: all 0.2s; }
+.icon-btn:hover { border-color: var(--primary); color: var(--primary); }
+.notif-badge { position: absolute; top: -4px; right: -4px; width: 16px; height: 16px; background: var(--danger); border-radius: 50%; color: #fff; font-size: 0.55rem; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid var(--surface); }
+.greeting { font-size: 0.875rem; color: var(--text2); }
+.greeting strong { color: var(--text); }
+
+/* PAGE CONTENT */
+.page-content { padding: 28px; flex: 1; }
+.page-section { display: none; }
+.page-section.active { display: block; }
+.page-title { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; color: var(--primary); margin-bottom: 4px; }
+.page-subtitle { color: var(--text2); font-size: 0.9rem; margin-bottom: 24px; }
+
+/* STAT CARDS */
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 24px; }
+.stat-card {
+  background: var(--surface); border-radius: var(--radius); padding: 22px;
+  border: 1.5px solid var(--border);
+  transition: all 0.25s; cursor: default; position: relative; overflow: hidden;
+}
+.stat-card::after { content: ''; position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; border-radius: 50%; opacity: 0.06; }
+.stat-card.blue::after { background: var(--primary); }
+.stat-card.green::after { background: var(--success); }
+.stat-card.orange::after { background: var(--accent); }
+.stat-card.purple::after { background: var(--info); }
+.stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+.stat-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.stat-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+.stat-trend { font-size: 0.75rem; font-weight: 600; padding: 3px 8px; border-radius: 6px; }
+.stat-trend.up { background: var(--success-pale); color: var(--success); }
+.stat-trend.neutral { background: var(--warning-pale); color: var(--warning); }
+.stat-card .val { font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--text); line-height: 1; margin-bottom: 4px; }
+.stat-card .lbl { font-size: 0.8rem; color: var(--text2); }
+
+/* GRID LAYOUTS */
+.dash-grid { display: grid; grid-template-columns: 1fr 340px; gap: 20px; margin-bottom: 20px; }
+.dash-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px; }
+.card { background: var(--surface); border-radius: var(--radius); border: 1.5px solid var(--border); overflow: hidden; }
+.card-header { padding: 18px 22px 14px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+.card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem; color: var(--text); }
+.card-body { padding: 20px 22px; }
+.card-action { font-size: 0.8rem; color: var(--primary); font-weight: 600; cursor: pointer; text-decoration: none; }
+.card-action:hover { text-decoration: underline; }
+
+/* QUICK ACTIONS */
+.quick-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.qa-btn {
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); padding: 14px 10px;
+  text-align: center; cursor: pointer; transition: all 0.2s; text-decoration: none;
+}
+.qa-btn:hover { border-color: var(--primary); background: var(--primary-pale); }
+.qa-btn .qa-icon { font-size: 1.3rem; margin-bottom: 6px; }
+.qa-btn .qa-label { font-size: 0.75rem; font-weight: 600; color: var(--text); }
+
+/* CLAIM TRACKER */
+.claim-timeline { padding: 16px 0; }
+.claim-item { display: flex; gap: 14px; padding: 14px 22px; border-bottom: 1px solid var(--border); }
+.claim-item:last-child { border-bottom: none; }
+.claim-id { font-size: 0.78rem; font-weight: 700; color: var(--primary); margin-bottom: 3px; }
+.claim-type { font-size: 0.85rem; font-weight: 600; }
+.claim-date { font-size: 0.75rem; color: var(--text2); }
+.claim-status { margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.status-badge { font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.04em; }
+.status-badge.approved { background: var(--success-pale); color: var(--success); }
+.status-badge.processing { background: var(--warning-pale); color: var(--warning); }
+.status-badge.pending { background: var(--danger-pale); color: var(--danger); }
+
+/* PROGRESS STEPS */
+.progress-steps { display: flex; align-items: center; gap: 0; }
+.ps { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; flex-shrink: 0; }
+.ps.done { background: var(--success); color: #fff; }
+.ps.active { background: var(--warning); color: #fff; }
+.ps.waiting { background: var(--border); color: var(--text2); }
+.ps-line { flex: 1; height: 2px; background: var(--border); min-width: 12px; }
+.ps-line.done { background: var(--success); }
+
+/* RECENT SERVICES */
+.recent-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.recent-item:last-child { border-bottom: none; }
+.recent-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0; }
+.recent-item .ri-label { font-size: 0.875rem; font-weight: 600; }
+.recent-item .ri-time { font-size: 0.75rem; color: var(--text2); }
+.recent-item .ri-arrow { margin-left: auto; color: var(--text2); font-size: 0.85rem; }
+
+/* PASSBOOK TABLE */
+.passbook-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+.passbook-table th { background: var(--bg); padding: 10px 14px; text-align: left; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text2); font-weight: 700; }
+.passbook-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+.passbook-table tr:last-child td { border-bottom: none; }
+.passbook-table tr:hover td { background: var(--bg); }
+.credit { color: var(--success); font-weight: 600; }
+.balance-val { font-weight: 700; font-family: 'Syne', sans-serif; }
+.download-btn { background: var(--primary); color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-size: 0.875rem; cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
+.download-btn:hover { background: var(--primary-light); transform: translateY(-1px); }
+
+/* CHART */
+canvas { max-width: 100%; }
+
+/* NOTIFICATION PANEL */
+.notif-panel {
+  position: fixed; top: 64px; right: 0; width: 360px;
+  background: var(--surface); border-left: 1px solid var(--border);
+  height: calc(100vh - 64px); z-index: 300;
+  transform: translateX(100%); transition: transform 0.3s;
+  display: flex; flex-direction: column;
+  box-shadow: -4px 0 24px rgba(0,0,0,0.08);
+}
+.notif-panel.open { transform: translateX(0); }
+.notif-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.notif-header h3 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; }
+.notif-close { background: none; border: none; cursor: pointer; color: var(--text2); font-size: 1.1rem; }
+.notif-list { flex: 1; overflow-y: auto; padding: 12px; }
+.notif-item { background: var(--surface2); border-radius: 10px; padding: 14px; margin-bottom: 8px; border: 1.5px solid var(--border); transition: border-color 0.2s; cursor: pointer; }
+.notif-item:hover { border-color: var(--primary); }
+.notif-item.unread { border-left: 4px solid var(--primary); }
+.notif-item.unread.success { border-left-color: var(--success); }
+.notif-item.unread.warning { border-left-color: var(--warning); }
+.notif-type-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; margin-bottom: 8px; }
+.notif-title { font-size: 0.875rem; font-weight: 700; margin-bottom: 3px; }
+.notif-msg { font-size: 0.8rem; color: var(--text2); line-height: 1.5; margin-bottom: 6px; }
+.notif-time { font-size: 0.72rem; color: var(--text2); }
+
+/* KYC */
+.kyc-status { display: flex; align-items: center; gap: 14px; padding: 16px; background: var(--success-pale); border-radius: 12px; border: 1.5px solid rgba(30,158,110,0.2); margin-bottom: 16px; }
+.kyc-check { width: 44px; height: 44px; background: var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.1rem; flex-shrink: 0; }
+.kyc-text h4 { font-weight: 700; color: var(--success); margin-bottom: 2px; }
+.kyc-text p { font-size: 0.8rem; color: var(--text2); }
+.kyc-doc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.kyc-doc { background: var(--surface2); border: 1.5px solid var(--border); border-radius: 10px; padding: 14px; }
+.kyc-doc .doc-name { font-size: 0.82rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.kyc-doc .doc-val { font-size: 0.78rem; color: var(--text2); }
+.kyc-doc .doc-status { font-size: 0.7rem; font-weight: 700; color: var(--success); display: flex; align-items: center; gap: 4px; margin-top: 6px; }
+
+/* CLAIM FORM */
+.form-step { display: none; }
+.form-step.active { display: block; }
+.step-indicator { display: flex; gap: 12px; margin-bottom: 28px; overflow-x: auto; padding-bottom: 4px; }
+.si-item { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.si-num { width: 28px; height: 28px; border-radius: 50%; font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; justify-content: center; background: var(--border); color: var(--text2); transition: all 0.3s; }
+.si-num.active { background: var(--primary); color: #fff; }
+.si-num.done { background: var(--success); color: #fff; }
+.si-label { font-size: 0.82rem; font-weight: 600; color: var(--text2); transition: color 0.3s; }
+.si-label.active { color: var(--primary); }
+.si-line { width: 30px; height: 2px; background: var(--border); }
+.si-line.done { background: var(--success); }
+.form-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px; }
+.form-group { margin-bottom: 16px; }
+.form-label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--text2); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+.form-label .req { color: var(--danger); }
+.form-input {
+  width: 100%; padding: 11px 14px; border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); font-size: 0.9rem; font-family: 'DM Sans', sans-serif;
+  background: var(--surface2); color: var(--text); outline: none; transition: all 0.2s;
+}
+.form-input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(26,58,110,0.08); }
+.form-input.error { border-color: var(--danger); }
+.form-select { width: 100%; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem; font-family: 'DM Sans', sans-serif; background: var(--surface2); color: var(--text); outline: none; cursor: pointer; }
+.error-hint { font-size: 0.75rem; color: var(--danger); margin-top: 4px; display: none; }
+.error-hint.show { display: block; }
+.btn-row { display: flex; gap: 12px; margin-top: 20px; }
+.btn { padding: 11px 22px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.2s; border: none; }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-light); transform: translateY(-1px); }
+.btn-secondary { background: var(--surface2); color: var(--text); border: 1.5px solid var(--border); }
+.btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
+.btn-danger { background: var(--danger); color: #fff; }
+.confirm-dialog {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 500;
+  display: flex; align-items: center; justify-content: center; display: none;
+}
+.confirm-dialog.show { display: flex; }
+.confirm-box { background: var(--surface); border-radius: var(--radius); padding: 32px; max-width: 420px; width: 90%; box-shadow: var(--shadow-lg); }
+.confirm-box h3 { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; }
+.confirm-box p { color: var(--text2); font-size: 0.9rem; margin-bottom: 24px; line-height: 1.6; }
+.success-anim { text-align: center; padding: 20px; }
+.success-anim .check-circle { width: 80px; height: 80px; background: var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; animation: popIn 0.5s ease; font-size: 2rem; color: #fff; }
+@keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* FAQ */
+.faq-item { border: 1.5px solid var(--border); border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
+.faq-q { padding: 16px 18px; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: var(--surface); transition: background 0.2s; }
+.faq-q:hover { background: var(--bg); }
+.faq-q i { color: var(--text2); transition: transform 0.3s; }
+.faq-item.open .faq-q i { transform: rotate(180deg); }
+.faq-item.open .faq-q { background: var(--primary-pale); color: var(--primary); }
+.faq-a { display: none; padding: 16px 18px; font-size: 0.875rem; color: var(--text2); line-height: 1.7; background: var(--surface2); border-top: 1px solid var(--border); }
+.faq-item.open .faq-a { display: block; }
+
+/* CHAT WIDGET */
+.chat-btn {
+  position: fixed; bottom: 28px; right: 28px; z-index: 400;
+  width: 56px; height: 56px; border-radius: 50%; background: var(--primary);
+  color: #fff; border: none; cursor: pointer; font-size: 1.2rem;
+  box-shadow: 0 4px 20px rgba(26,58,110,0.35);
+  transition: all 0.25s; display: flex; align-items: center; justify-content: center;
+}
+.chat-btn:hover { transform: scale(1.1); }
+.chat-window {
+  position: fixed; bottom: 96px; right: 28px; z-index: 400;
+  width: 340px; height: 480px; background: var(--surface); border-radius: 20px;
+  box-shadow: var(--shadow-lg); display: none; flex-direction: column;
+  border: 1.5px solid var(--border); overflow: hidden;
+}
+.chat-window.open { display: flex; }
+.chat-head { background: var(--primary); padding: 16px 18px; display: flex; align-items: center; gap: 12px; }
+.chat-head .avatar { width: 36px; height: 36px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; color: #fff; }
+.chat-head .info .name { font-weight: 700; color: #fff; font-size: 0.9rem; }
+.chat-head .info .status { font-size: 0.72rem; color: rgba(255,255,255,0.7); }
+.chat-head .close-chat { margin-left: auto; background: none; border: none; color: rgba(255,255,255,0.8); cursor: pointer; font-size: 1rem; }
+.chat-msgs { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; background: var(--bg); }
+.msg { max-width: 80%; padding: 10px 14px; border-radius: 14px; font-size: 0.85rem; line-height: 1.5; }
+.msg.bot { background: var(--surface); border: 1.5px solid var(--border); align-self: flex-start; border-bottom-left-radius: 4px; }
+.msg.user { background: var(--primary); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+.chat-footer { padding: 12px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
+.chat-input { flex: 1; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 0.875rem; font-family: 'DM Sans', sans-serif; outline: none; }
+.chat-input:focus { border-color: var(--primary); }
+.chat-send { background: var(--primary); color: #fff; border: none; width: 38px; height: 38px; border-radius: 10px; cursor: pointer; font-size: 0.9rem; transition: background 0.2s; }
+.chat-send:hover { background: var(--primary-light); }
+
+/* TOAST */
+.toast-container { position: fixed; top: 80px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+.toast { background: var(--surface); border-radius: 12px; padding: 14px 18px; box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 12px; min-width: 300px; border-left: 4px solid; animation: slideIn 0.3s ease; }
+@keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.toast.success { border-color: var(--success); }
+.toast.info { border-color: var(--primary); }
+.toast.warning { border-color: var(--warning); }
+.toast .toast-icon { font-size: 1.1rem; }
+.toast.success .toast-icon { color: var(--success); }
+.toast.info .toast-icon { color: var(--primary); }
+.toast.warning .toast-icon { color: var(--warning); }
+.toast .toast-text { flex: 1; font-size: 0.875rem; font-weight: 500; }
+.toast .toast-close { background: none; border: none; cursor: pointer; color: var(--text2); font-size: 0.9rem; }
+
+/* SESSION TIMER */
+.session-bar {
+  background: var(--warning); color: #fff; padding: 8px 28px;
+  display: none; font-size: 0.82rem; font-weight: 600; text-align: center;
+  display: none; align-items: center; justify-content: center; gap: 10px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1100px) { .stat-grid { grid-template-columns: repeat(2,1fr); } .dash-grid { grid-template-columns: 1fr; } }
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .main-wrap { margin-left: 0; }
+  .dash-grid-3 { grid-template-columns: 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-box">
+      <div class="logo-icon"><i class="fas fa-building-columns"></i></div>
+      <div class="logo-text">
+        <div class="t1">EPFO</div>
+        <div class="t2">MEMBER PORTAL</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="user-pill">
+    <div class="user-avatar">RK</div>
+    <div class="user-info">
+      <div class="name">Rajesh Kumar</div>
+      <div class="uan">UAN: 100XXXXXXXX</div>
+    </div>
+  </div>
+
+  <nav class="nav-menu">
+    <div class="nav-section-title">Main Menu</div>
+    <a class="nav-item active" onclick="showSection('dashboard', this)">
+      <i class="nav-icon fas fa-gauge-high"></i> Dashboard
+    </a>
+    <a class="nav-item" onclick="showSection('passbook', this)">
+      <i class="nav-icon fas fa-book-open"></i> Passbook
+    </a>
+    <a class="nav-item" onclick="showSection('claims', this)">
+      <i class="nav-icon fas fa-file-invoice"></i> Claims
+      <span class="nav-badge">2</span>
+    </a>
+    <a class="nav-item" onclick="showSection('claimfile', this)">
+      <i class="nav-icon fas fa-paper-plane"></i> File a Claim
+    </a>
+
+    <div class="nav-section-title">Account</div>
+    <a class="nav-item" onclick="showSection('kyc', this)">
+      <i class="nav-icon fas fa-id-card"></i> KYC Status
+    </a>
+    <a class="nav-item" onclick="showSection('profile', this)">
+      <i class="nav-icon fas fa-user"></i> My Profile
+    </a>
+
+    <div class="nav-section-title">Help</div>
+    <a class="nav-item" onclick="showSection('faq', this)">
+      <i class="nav-icon fas fa-circle-question"></i> FAQ
+    </a>
+    <a class="nav-item" onclick="openChat()">
+      <i class="nav-icon fas fa-robot"></i> Chat Assistant
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <a class="nav-item" href="/" onclick="return confirmLogout()">
+      <i class="nav-icon fas fa-arrow-right-from-bracket"></i> Logout
+    </a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main-wrap">
+  <!-- SESSION BAR -->
+  <div class="session-bar" id="sessionBar">
+    <i class="fas fa-clock"></i> Your session will expire in <strong id="sessionCountdown">05:00</strong>. <a href="#" style="color:#fff;text-decoration:underline;margin-left:6px;" onclick="extendSession()">Extend Session</a>
+  </div>
+
+  <!-- TOP NAV -->
+  <div class="topnav">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <button style="background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--text2);display:none;" id="menuToggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+      <div class="breadcrumb">
+        <span>EPFO</span>
+        <i class="fas fa-chevron-right"></i>
+        <span class="current" id="breadcrumbCurrent">Dashboard</span>
+      </div>
+    </div>
+    <div class="topnav-right">
+      <div class="greeting">Welcome back, <strong>Rajesh</strong> 👋</div>
+      <div class="icon-btn" onclick="toggleNotifications()" title="Notifications">
+        <i class="fas fa-bell"></i>
+        <span class="notif-badge" id="notifBadge">2</span>
+      </div>
+      <div class="icon-btn" title="Settings">
+        <i class="fas fa-gear"></i>
+      </div>
+      <a href="/" class="icon-btn" title="Logout">
+        <i class="fas fa-arrow-right-from-bracket"></i>
+      </a>
+    </div>
+  </div>
+
+  <!-- PAGE CONTENT -->
+  <div class="page-content">
+
+    <!-- DASHBOARD -->
+    <div class="page-section active" id="sec-dashboard">
+      <div class="page-title">Dashboard Overview</div>
+      <div class="page-subtitle">Last updated: February 22, 2025</div>
+
+      <div class="stat-grid">
+        <div class="stat-card blue">
+          <div class="stat-header">
+            <div class="stat-icon" style="background:var(--primary-pale);"><i class="fas fa-wallet" style="color:var(--primary);"></i></div>
+            <div class="stat-trend up">+8.15%</div>
+          </div>
+          <div class="val">₹2,84,500</div>
+          <div class="lbl">Total PF Balance</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-header">
+            <div class="stat-icon" style="background:var(--success-pale);"><i class="fas fa-arrow-up-from-bracket" style="color:var(--success);"></i></div>
+            <div class="stat-trend up">Jan '25</div>
+          </div>
+          <div class="val">₹10,400</div>
+          <div class="lbl">Last Contribution</div>
+        </div>
+        <div class="stat-card orange">
+          <div class="stat-header">
+            <div class="stat-icon" style="background:var(--warning-pale);"><i class="fas fa-clock" style="color:var(--warning);"></i></div>
+            <div class="stat-trend neutral">Active</div>
+          </div>
+          <div class="val">3</div>
+          <div class="lbl">Active Claims</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-header">
+            <div class="stat-icon" style="background:var(--info-pale);"><i class="fas fa-calendar" style="color:var(--info);"></i></div>
+            <div class="stat-trend up">8.25%</div>
+          </div>
+          <div class="val">15 yrs</div>
+          <div class="lbl">Service Tenure</div>
+        </div>
+      </div>
+
+      <div class="dash-grid">
+        <!-- CHART -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Monthly Contributions</div>
+            <a class="card-action" onclick="showSection('passbook', document.querySelector('[onclick*=passbook]'))">View Full Passbook →</a>
+          </div>
+          <div class="card-body">
+            <canvas id="contribChart" height="200"></canvas>
+          </div>
+        </div>
+
+        <!-- QUICK ACTIONS + RECENT -->
+        <div style="display:flex;flex-direction:column;gap:18px;">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Quick Actions</div></div>
+            <div class="card-body">
+              <div class="quick-actions">
+                <div class="qa-btn" onclick="showSection('passbook', null)">
+                  <div class="qa-icon">📗</div><div class="qa-label">Passbook</div>
+                </div>
+                <div class="qa-btn" onclick="showSection('claimfile', null)">
+                  <div class="qa-icon">📋</div><div class="qa-label">File Claim</div>
+                </div>
+                <div class="qa-btn" onclick="showSection('kyc', null)">
+                  <div class="qa-icon">🪪</div><div class="qa-label">KYC</div>
+                </div>
+                <div class="qa-btn" onclick="downloadPassbook()">
+                  <div class="qa-icon">⬇️</div><div class="qa-label">Download</div>
+                </div>
+                <div class="qa-btn" onclick="showSection('claims', null)">
+                  <div class="qa-icon">🔍</div><div class="qa-label">Track Claim</div>
+                </div>
+                <div class="qa-btn" onclick="openChat()">
+                  <div class="qa-icon">💬</div><div class="qa-label">Help</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Recently Used</div></div>
+            <div class="card-body" style="padding-top:12px;">
+              <div class="recent-item">
+                <div class="recent-icon" style="background:var(--primary-pale);"><i class="fas fa-wallet" style="color:var(--primary);"></i></div>
+                <div><div class="ri-label">PF Balance Check</div><div class="ri-time">2 hours ago</div></div>
+                <i class="fas fa-chevron-right ri-arrow"></i>
+              </div>
+              <div class="recent-item">
+                <div class="recent-icon" style="background:var(--success-pale);"><i class="fas fa-book" style="color:var(--success);"></i></div>
+                <div><div class="ri-label">Passbook Download</div><div class="ri-time">Yesterday</div></div>
+                <i class="fas fa-chevron-right ri-arrow"></i>
+              </div>
+              <div class="recent-item">
+                <div class="recent-icon" style="background:var(--warning-pale);"><i class="fas fa-file-invoice" style="color:var(--warning);"></i></div>
+                <div><div class="ri-label">Claim Filed</div><div class="ri-time">3 days ago</div></div>
+                <i class="fas fa-chevron-right ri-arrow"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CLAIM TRACKER -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Claim Status Tracker</div>
+          <a class="card-action" onclick="showSection('claims', null)">View All →</a>
+        </div>
+        <div class="claim-timeline" id="claimTimeline"></div>
+      </div>
+    </div>
+
+    <!-- PASSBOOK -->
+    <div class="page-section" id="sec-passbook">
+      <div class="page-title">PF Passbook</div>
+      <div class="page-subtitle">Your complete contribution history</div>
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Account: 100XXXXXXXX</div>
+            <div style="font-size:0.78rem;color:var(--text2);margin-top:2px;">Balance as of Jan 2025: <strong style="color:var(--success);">₹2,84,500</strong></div>
+          </div>
+          <button class="download-btn" onclick="downloadPassbook()"><i class="fas fa-download"></i> Download Passbook</button>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div style="overflow-x:auto;">
+            <table class="passbook-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Description</th>
+                  <th>Employee Cr</th>
+                  <th>Employer Cr</th>
+                  <th>Balance</th>
+                </tr>
+              </thead>
+              <tbody id="passbookBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLAIMS -->
+    <div class="page-section" id="sec-claims">
+      <div class="page-title">My Claims</div>
+      <div class="page-subtitle">Track all your claim requests in real-time</div>
+      <div id="claimsDetail"></div>
+    </div>
+
+    <!-- FILE CLAIM -->
+    <div class="page-section" id="sec-claimfile">
+      <div class="page-title">File a New Claim</div>
+      <div class="page-subtitle">Submit PF withdrawal, transfer, or pension claim</div>
+      <div class="card">
+        <div class="card-body">
+          <!-- Step Indicator -->
+          <div class="step-indicator">
+            <div class="si-item"><div class="si-num active" id="si1">1</div><div class="si-label active" id="sl1">Claim Type</div></div>
+            <div class="si-line" id="sline1"></div>
+            <div class="si-item"><div class="si-num" id="si2">2</div><div class="si-label" id="sl2">Details</div></div>
+            <div class="si-line" id="sline2"></div>
+            <div class="si-item"><div class="si-num" id="si3">3</div><div class="si-label" id="sl3">Bank Details</div></div>
+            <div class="si-line" id="sline3"></div>
+            <div class="si-item"><div class="si-num" id="si4">4</div><div class="si-label" id="sl4">Review</div></div>
+          </div>
+
+          <!-- Step 1 -->
+          <div class="form-step active" id="fstep1">
+            <h3 style="font-family:'Syne',sans-serif;margin-bottom:16px;color:var(--primary);">Select Claim Type</h3>
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:20px;">
+              <div class="qa-btn" onclick="selectClaim(this,'PF Withdrawal')" style="padding:20px;text-align:left;">
+                <div style="font-size:1.5rem;margin-bottom:8px;">💰</div>
+                <div style="font-weight:700;font-size:0.9rem;margin-bottom:4px;">PF Withdrawal</div>
+                <div style="font-size:0.75rem;color:var(--text2);">Full/Partial withdrawal from your PF account</div>
+              </div>
+              <div class="qa-btn" onclick="selectClaim(this,'PF Transfer')" style="padding:20px;text-align:left;">
+                <div style="font-size:1.5rem;margin-bottom:8px;">🔄</div>
+                <div style="font-weight:700;font-size:0.9rem;margin-bottom:4px;">PF Transfer</div>
+                <div style="font-size:0.75rem;color:var(--text2);">Transfer PF from previous employer</div>
+              </div>
+              <div class="qa-btn" onclick="selectClaim(this,'Pension Withdrawal')" style="padding:20px;text-align:left;">
+                <div style="font-size:1.5rem;margin-bottom:8px;">🏦</div>
+                <div style="font-weight:700;font-size:0.9rem;margin-bottom:4px;">Pension Withdrawal</div>
+                <div style="font-size:0.75rem;color:var(--text2);">Withdraw EPS pension amount</div>
+              </div>
+              <div class="qa-btn" onclick="selectClaim(this,'Advance (Form 31)')" style="padding:20px;text-align:left;">
+                <div style="font-size:1.5rem;margin-bottom:8px;">🏥</div>
+                <div style="font-weight:700;font-size:0.9rem;margin-bottom:4px;">Advance (Form 31)</div>
+                <div style="font-size:0.75rem;color:var(--text2);">Medical/housing/education advance</div>
+              </div>
+            </div>
+            <div class="btn-row"><button class="btn btn-primary" onclick="nextClaimStep(2)">Continue <i class="fas fa-arrow-right" style="margin-left:6px;"></i></button></div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="form-step" id="fstep2">
+            <h3 style="font-family:'Syne',sans-serif;margin-bottom:16px;color:var(--primary);">Member Details</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Full Name <span class="req">*</span></label>
+                <input type="text" class="form-input" value="Rajesh Kumar" readonly style="background:var(--bg);">
+              </div>
+              <div class="form-group">
+                <label class="form-label">UAN <span class="req">*</span></label>
+                <input type="text" class="form-input" value="100XXXXXXXX" readonly style="background:var(--bg);">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Reason for Claim <span class="req">*</span></label>
+                <select class="form-select" id="claimReason">
+                  <option value="">Select reason</option>
+                  <option>Retirement</option>
+                  <option>Resignation</option>
+                  <option>Medical Emergency</option>
+                  <option>Home Purchase</option>
+                  <option>Marriage</option>
+                </select>
+                <div class="error-hint" id="reasonErr">Please select a reason</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Claim Amount (₹)</label>
+                <input type="number" class="form-input" id="claimAmount" placeholder="Enter amount (optional)">
+              </div>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-secondary" onclick="nextClaimStep(1)">← Back</button>
+              <button class="btn btn-primary" onclick="nextClaimStep(3)">Continue →</button>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="form-step" id="fstep3">
+            <h3 style="font-family:'Syne',sans-serif;margin-bottom:16px;color:var(--primary);">Bank Account Details</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Account Number <span class="req">*</span></label>
+                <input type="text" class="form-input" id="accNum" placeholder="Enter account number" oninput="validateAccNum(this)">
+                <div class="error-hint" id="accErr">Please enter a valid account number</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">IFSC Code <span class="req">*</span></label>
+                <input type="text" class="form-input" id="ifsc" placeholder="e.g. SBIN0001234" oninput="this.value=this.value.toUpperCase()">
+                <div class="error-hint" id="ifscErr">Invalid IFSC code format</div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Bank Name</label>
+              <input type="text" class="form-input" value="State Bank of India" readonly style="background:var(--bg);">
+            </div>
+            <div style="background:rgba(30,158,110,0.07);border:1.5px solid rgba(30,158,110,0.2);border-radius:10px;padding:12px 16px;font-size:0.82rem;color:var(--success);margin-bottom:16px;">
+              <i class="fas fa-circle-check" style="margin-right:6px;"></i> Aadhaar-linked bank account will be used for credit.
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-secondary" onclick="nextClaimStep(2)">← Back</button>
+              <button class="btn btn-primary" onclick="nextClaimStep(4)">Review Claim →</button>
+            </div>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="form-step" id="fstep4">
+            <h3 style="font-family:'Syne',sans-serif;margin-bottom:16px;color:var(--primary);">Review & Submit</h3>
+            <div id="reviewBox" style="background:var(--bg);border-radius:12px;padding:20px;margin-bottom:20px;font-size:0.875rem;"></div>
+            <div style="background:var(--warning-pale);border:1.5px solid rgba(245,158,11,0.3);border-radius:10px;padding:12px 16px;font-size:0.82rem;color:#92400e;margin-bottom:20px;">
+              <i class="fas fa-triangle-exclamation" style="margin-right:6px;"></i>
+              Please verify all details. Once submitted, the claim cannot be edited.
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-secondary" onclick="nextClaimStep(3)">← Edit</button>
+              <button class="btn btn-primary" onclick="showConfirmDialog()">Submit Claim</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KYC -->
+    <div class="page-section" id="sec-kyc">
+      <div class="page-title">KYC Status</div>
+      <div class="page-subtitle">Your document verification status</div>
+      <div class="card">
+        <div class="card-body">
+          <div class="kyc-status">
+            <div class="kyc-check"><i class="fas fa-check"></i></div>
+            <div class="kyc-text">
+              <h4>KYC Fully Verified</h4>
+              <p>All your documents have been verified and are up to date. Last verified: 15-Jan-2025</p>
+            </div>
+          </div>
+          <div class="kyc-doc-grid">
+            <div class="kyc-doc">
+              <div class="doc-name">Aadhaar Card</div>
+              <div class="doc-val">XXXX XXXX 4521</div>
+              <div class="doc-status"><i class="fas fa-check-circle"></i> Verified</div>
+            </div>
+            <div class="kyc-doc">
+              <div class="doc-name">PAN Card</div>
+              <div class="doc-val">ABCDE1234F</div>
+              <div class="doc-status"><i class="fas fa-check-circle"></i> Verified</div>
+            </div>
+            <div class="kyc-doc">
+              <div class="doc-name">Bank Account</div>
+              <div class="doc-val">SBI — XXXX8745</div>
+              <div class="doc-status"><i class="fas fa-check-circle"></i> Verified</div>
+            </div>
+            <div class="kyc-doc">
+              <div class="doc-name">Mobile Number</div>
+              <div class="doc-val">98XXXXXXXX</div>
+              <div class="doc-status"><i class="fas fa-check-circle"></i> Verified</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="page-section" id="sec-profile">
+      <div class="page-title">My Profile</div>
+      <div class="page-subtitle">Your personal and employment details</div>
+      <div class="card">
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
+            <div class="form-group"><label class="form-label">Full Name</label><input type="text" class="form-input" value="Rajesh Kumar"></div>
+            <div class="form-group"><label class="form-label">UAN Number</label><input type="text" class="form-input" value="100XXXXXXXX" readonly style="background:var(--bg);"></div>
+            <div class="form-group"><label class="form-label">Date of Birth</label><input type="text" class="form-input" value="15-Mar-1985"></div>
+            <div class="form-group"><label class="form-label">Mobile</label><input type="text" class="form-input" value="98XXXXXXXX"></div>
+            <div class="form-group"><label class="form-label">Email</label><input type="text" class="form-input" value="rajesh@example.com"></div>
+            <div class="form-group"><label class="form-label">Company</label><input type="text" class="form-input" value="Tech Solutions Pvt. Ltd." readonly style="background:var(--bg);"></div>
+          </div>
+          <div class="btn-row"><button class="btn btn-primary" onclick="showToast('Profile updated successfully!','success')"><i class="fas fa-save" style="margin-right:6px;"></i>Save Changes</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="page-section" id="sec-faq">
+      <div class="page-title">Help & FAQ</div>
+      <div class="page-subtitle">Find answers to common questions</div>
+      <div id="faqList"></div>
+    </div>
+
+  </div><!-- /page-content -->
+</div><!-- /main-wrap -->
+
+<!-- NOTIFICATION PANEL -->
+<div class="notif-panel" id="notifPanel">
+  <div class="notif-header">
+    <h3><i class="fas fa-bell" style="color:var(--primary);margin-right:8px;"></i>Notifications</h3>
+    <button class="notif-close" onclick="toggleNotifications()"><i class="fas fa-xmark"></i></button>
+  </div>
+  <div class="notif-list" id="notifList"></div>
+</div>
+
+<!-- CONFIRM DIALOG -->
+<div class="confirm-dialog" id="confirmDialog">
+  <div class="confirm-box">
+    <div id="confirmContent">
+      <h3>Confirm Submission</h3>
+      <p>Are you sure you want to submit this claim? Once submitted, you cannot edit the details.</p>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="closeConfirm()">Cancel</button>
+        <button class="btn btn-primary" onclick="submitClaim()">Yes, Submit</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CHAT -->
+<button class="chat-btn" id="chatBtn" onclick="toggleChat()" title="Ask AI Assistant">
+  <i class="fas fa-robot" id="chatIcon"></i>
+</button>
+<div class="chat-window" id="chatWindow">
+  <div class="chat-head">
+    <div class="avatar"><i class="fas fa-robot"></i></div>
+    <div class="info">
+      <div class="name">EPFO Assistant</div>
+      <div class="status">Online · Powered by AI</div>
+    </div>
+    <button class="close-chat" onclick="toggleChat()"><i class="fas fa-xmark"></i></button>
+  </div>
+  <div class="chat-msgs" id="chatMsgs">
+    <div class="msg bot">Hello Rajesh! 👋 I'm your EPFO assistant. I can help with PF balance, claims, KYC, and more. What would you like to know?</div>
+  </div>
+  <div class="chat-footer">
+    <input type="text" class="chat-input" id="chatInput" placeholder="Type your question..." onkeydown="if(event.key==='Enter')sendChat()">
+    <button class="chat-send" onclick="sendChat()"><i class="fas fa-paper-plane"></i></button>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// SECTION NAVIGATION
+function showSection(id, el) {
+  document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-' + id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  document.getElementById('breadcrumbCurrent').textContent = id.charAt(0).toUpperCase() + id.slice(1);
+  if(id === 'passbook') loadPassbook();
+  if(id === 'claims') loadClaims();
+  if(id === 'faq') loadFAQ();
+}
+
+// TOAST
+function showToast(msg, type='info') {
+  const icons = {success:'fas fa-check-circle', warning:'fas fa-triangle-exclamation', info:'fas fa-circle-info'};
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<i class="${icons[type]||icons.info} toast-icon"></i><span class="toast-text">${msg}</span><button class="toast-close" onclick="this.parentElement.remove()"><i class="fas fa-xmark"></i></button>`;
+  document.getElementById('toastContainer').appendChild(t);
+  setTimeout(() => t.remove(), 4500);
+}
+
+// CHART
+async function loadChart() {
+  const res = await fetch('/api/contributions');
+  const data = await res.json();
+  const ctx = document.getElementById('contribChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: data.map(d => d.month),
+      datasets: [
+        { label: 'Employee', data: data.map(d => d.employee), backgroundColor: 'rgba(26,58,110,0.85)', borderRadius: 6, barThickness: 20 },
+        { label: 'Employer', data: data.map(d => d.employer), backgroundColor: 'rgba(247,148,29,0.85)', borderRadius: 6, barThickness: 20 }
+      ]
+    },
+    options: {
+      responsive: true, plugins: { legend: { position: 'bottom' } },
+      scales: { x: { grid: { display: false } }, y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { callback: v => '₹' + (v/1000) + 'k' } } }
+    }
+  });
+}
+
+// CLAIMS IN DASHBOARD
+async function loadClaimTimeline() {
+  const res = await fetch('/api/claims');
+  const claims = await res.json();
+  const steps = ['Submitted', 'Verified', 'Processing', 'Approved'];
+  document.getElementById('claimTimeline').innerHTML = claims.map(c => `
+    <div class="claim-item">
+      <div>
+        <div class="claim-id">${c.id}</div>
+        <div class="claim-type">${c.type}</div>
+        <div class="claim-date">${c.date}</div>
+        <div class="progress-steps" style="margin-top:10px;">
+          ${steps.map((s, i) => `
+            <div class="ps ${i < c.step ? 'done' : i === c.step-1 ? 'active' : 'waiting'}" title="${s}">${i < c.step ? '✓' : i+1}</div>
+            ${i < steps.length-1 ? `<div class="ps-line ${i < c.step-1 ? 'done' : ''}"></div>` : ''}
+          `).join('')}
+        </div>
+      </div>
+      <div class="claim-status">
+        <div class="status-badge ${c.status}">${c.status}</div>
+        ${c.amount ? `<div style="font-size:0.82rem;font-weight:700;color:var(--text);">₹${c.amount.toLocaleString()}</div>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+// PASSBOOK
+async function loadPassbook() {
+  const res = await fetch('/api/passbook');
+  const rows = await res.json();
+  document.getElementById('passbookBody').innerHTML = rows.map(r => `
+    <tr>
+      <td>${r.date}</td>
+      <td>${r.description}</td>
+      <td class="credit">${r.employee_cr ? '₹' + r.employee_cr.toLocaleString() : '-'}</td>
+      <td class="credit">${r.employer_cr ? '₹' + r.employer_cr.toLocaleString() : '-'}</td>
+      <td class="balance-val">₹${r.balance.toLocaleString()}</td>
+    </tr>
+  `).join('');
+}
+function downloadPassbook() {
+  showToast('Downloading passbook... File will be ready shortly.', 'success');
+  setTimeout(() => { showToast('Passbook_Jan2025.pdf downloaded!', 'info'); }, 1800);
+}
+
+// FULL CLAIMS PAGE
+async function loadClaims() {
+  const res = await fetch('/api/claims');
+  const claims = await res.json();
+  const steps = ['Submitted','Verified','Processing','Approved'];
+  document.getElementById('claimsDetail').innerHTML = claims.map(c => `
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-header">
+        <div>
+          <div class="card-title">${c.type} <span class="status-badge ${c.status}" style="margin-left:8px;">${c.status}</span></div>
+          <div style="font-size:0.78rem;color:var(--text2);margin-top:2px;">Claim ID: ${c.id} · Filed: ${c.date} ${c.amount?'· Amount: ₹'+c.amount.toLocaleString():''}</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div style="display:flex;align-items:center;gap:0;margin-bottom:12px;">
+          ${steps.map((s,i) => `
+            <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;">
+              <div class="ps ${i < c.step ? 'done' : i === c.step-1 ? 'active' : 'waiting'}" style="width:28px;height:28px;font-size:0.8rem;">${i < c.step ? '✓' : i+1}</div>
+              <div style="font-size:0.68rem;color:var(--text2);text-align:center;">${s}</div>
+            </div>
+            ${i < steps.length-1 ? `<div style="flex:1;height:2px;background:${i < c.step-1 ? 'var(--success)' : 'var(--border)'};margin-bottom:16px;"></div>` : ''}
+          `).join('')}
+        </div>
+        <div style="font-size:0.8rem;color:var(--text2);">
+          ${c.status === 'approved' ? '✅ Amount will be credited to your bank account within 2-3 working days.' : 
+            c.status === 'processing' ? '⏳ Your claim is being verified by EPFO. Expected: 3-5 working days.' : 
+            '📋 Claim submitted successfully. Awaiting verification.'}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// CLAIM FORM
+let currentClaimStep = 1;
+let selectedClaimType = '';
+function selectClaim(el, type) {
+  document.querySelectorAll('#fstep1 .qa-btn').forEach(b => b.style.borderColor = 'var(--border)');
+  el.style.borderColor = 'var(--primary)';
+  selectedClaimType = type;
+  showToast(`Selected: ${type}`, 'info');
+}
+function nextClaimStep(step) {
+  if(step === 3) {
+    const reason = document.getElementById('claimReason').value;
+    if(!reason) { document.getElementById('reasonErr').classList.add('show'); return; }
+    document.getElementById('reasonErr').classList.remove('show');
+  }
+  if(step === 4) {
+    const acc = document.getElementById('accNum').value;
+    const ifsc = document.getElementById('ifsc').value;
+    if(acc.length < 8) { document.getElementById('accErr').classList.add('show'); document.getElementById('accNum').classList.add('error'); return; }
+    if(!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc)) { document.getElementById('ifscErr').classList.add('show'); document.getElementById('ifsc').classList.add('error'); return; }
+    document.getElementById('reviewBox').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div><div style="font-size:0.72rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">Claim Type</div><div style="font-weight:700;">${selectedClaimType || 'PF Withdrawal'}</div></div>
+        <div><div style="font-size:0.72rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">Reason</div><div style="font-weight:700;">${document.getElementById('claimReason').value}</div></div>
+        <div><div style="font-size:0.72rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">Amount</div><div style="font-weight:700;">${document.getElementById('claimAmount').value ? '₹'+parseInt(document.getElementById('claimAmount').value).toLocaleString() : 'Full Balance'}</div></div>
+        <div><div style="font-size:0.72rem;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">Bank Account</div><div style="font-weight:700;">XXXX${document.getElementById('accNum').value.slice(-4)}</div></div>
+      </div>
+    `;
+  }
+  document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('fstep'+step).classList.add('active');
+  for(let i=1; i<=4; i++) {
+    document.getElementById('si'+i).className = 'si-num' + (i < step ? ' done' : i === step ? ' active' : '');
+    document.getElementById('sl'+i).className = 'si-label' + (i === step ? ' active' : '');
+    if(i < 4) document.getElementById('sline'+i).className = 'si-line' + (i < step ? ' done' : '');
+  }
+  currentClaimStep = step;
+}
+function validateAccNum(input) {
+  if(input.value.length >= 8) { input.classList.remove('error'); document.getElementById('accErr').classList.remove('show'); }
+}
+function showConfirmDialog() { document.getElementById('confirmDialog').classList.add('show'); }
+function closeConfirm() { document.getElementById('confirmDialog').classList.remove('show'); }
+async function submitClaim() {
+  closeConfirm();
+  const res = await fetch('/api/claim/submit', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({type:selectedClaimType}) });
+  const data = await res.json();
+  document.getElementById('confirmContent').innerHTML = `
+    <div class="success-anim">
+      <div class="check-circle"><i class="fas fa-check"></i></div>
+      <h3 style="font-family:'Syne',sans-serif;color:var(--success);">Claim Submitted!</h3>
+      <p style="color:var(--text2);margin:10px 0 20px;">Your claim <strong>${data.claim_id}</strong> has been submitted successfully. You'll receive an SMS confirmation.</p>
+      <button class="btn btn-primary" onclick="closeConfirm();showSection('claims',null)">Track Claim Status</button>
+    </div>
+  `;
+  document.getElementById('confirmDialog').classList.add('show');
+  showToast('Claim submitted! ID: ' + data.claim_id, 'success');
+}
+
+// NOTIFICATIONS
+async function loadNotifications() {
+  const res = await fetch('/api/notifications');
+  const notifs = await res.json();
+  const typeIcons = {success:'fas fa-check-circle', info:'fas fa-circle-info', warning:'fas fa-triangle-exclamation'};
+  const typeColors = {success:'var(--success-pale)', info:'var(--primary-pale)', warning:'var(--warning-pale)'};
+  document.getElementById('notifList').innerHTML = notifs.map(n => `
+    <div class="notif-item ${!n.read ? 'unread '+n.type : ''}">
+      <div class="notif-type-icon" style="background:${typeColors[n.type]||typeColors.info};">
+        <i class="${typeIcons[n.type]||typeIcons.info}" style="color:${n.type==='success'?'var(--success)':n.type==='warning'?'var(--warning)':'var(--primary)'};"></i>
+      </div>
+      <div class="notif-title">${n.title}</div>
+      <div class="notif-msg">${n.message}</div>
+      <div class="notif-time"><i class="fas fa-clock" style="margin-right:4px;"></i>${n.time}</div>
+    </div>
+  `).join('');
+}
+function toggleNotifications() {
+  document.getElementById('notifPanel').classList.toggle('open');
+  loadNotifications();
+}
+
+// FAQ
+async function loadFAQ() {
+  const res = await fetch('/api/faq');
+  const faqs = await res.json();
+  document.getElementById('faqList').innerHTML = faqs.map((f,i) => `
+    <div class="faq-item" id="faq${i}">
+      <div class="faq-q" onclick="toggleFAQ(${i})">
+        <span>${f.q}</span><i class="fas fa-chevron-down"></i>
+      </div>
+      <div class="faq-a">${f.a}</div>
+    </div>
+  `).join('');
+}
+function toggleFAQ(i) {
+  const el = document.getElementById('faq'+i);
+  el.classList.toggle('open');
+}
+
+// CHAT
+function toggleChat() {
+  const w = document.getElementById('chatWindow');
+  w.classList.toggle('open');
+  const icon = document.getElementById('chatIcon');
+  icon.className = w.classList.contains('open') ? 'fas fa-xmark' : 'fas fa-robot';
+}
+function openChat() { document.getElementById('chatWindow').classList.add('open'); document.getElementById('chatIcon').className = 'fas fa-xmark'; }
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if(!msg) return;
+  const msgs = document.getElementById('chatMsgs');
+  msgs.innerHTML += `<div class="msg user">${msg}</div>`;
+  input.value = '';
+  msgs.innerHTML += `<div class="msg bot" id="typing"><i class="fas fa-spinner fa-spin"></i> Typing...</div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+  const res = await fetch('/api/chat', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({message: msg}) });
+  const data = await res.json();
+  document.getElementById('typing').outerHTML = `<div class="msg bot">${data.reply}</div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+// SESSION WARNING
+function startSessionTimer(seconds=300) {
+  const bar = document.getElementById('sessionBar');
+  setTimeout(() => {
+    bar.style.display = 'flex';
+    let s = seconds;
+    const t = setInterval(() => {
+      if(s <= 0) { clearInterval(t); bar.innerHTML = '⚠️ Session expired. <a href="/" style="color:#fff;text-decoration:underline;margin-left:6px;">Login again</a>'; return; }
+      const m = String(Math.floor(s/60)).padStart(2,'0');
+      const sec = String(s%60).padStart(2,'0');
+      document.getElementById('sessionCountdown').textContent = `${m}:${sec}`;
+      s--;
+    }, 1000);
+  }, 600000); // Show after 10 min
+}
+function extendSession() {
+  document.getElementById('sessionBar').style.display = 'none';
+  showToast('Session extended for 30 more minutes', 'success');
+}
+
+// SIDEBAR MOBILE
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+
+// INIT
+window.onload = async () => {
+  loadChart();
+  loadClaimTimeline();
+  showToast('Welcome back, Rajesh! 👋', 'success');
+  // Show notification count
+  const res = await fetch('/api/notifications');
+  const notifs = await res.json();
+  const unread = notifs.filter(n => !n.read).length;
+  document.getElementById('notifBadge').textContent = unread;
+  if(unread === 0) document.getElementById('notifBadge').style.display = 'none';
+};
+
+// Responsive
+if(window.innerWidth < 768) {
+  document.getElementById('menuToggle').style.display = 'block';
+}
+</script>
+</body>
+</html>
